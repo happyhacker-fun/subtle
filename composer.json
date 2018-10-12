@@ -1,0 +1,16 @@
+{
+  "require": {
+    "guzzlehttp/guzzle": "^6.3",
+    "ext-json": "*",
+    "monolog/monolog": "^1.23"
+  },
+  "autoload": {
+    "psr-4": {
+      "Subtle\\": "src/Subtle",
+      "Tests\\Subtle\\": "tests/Subtle"
+    }
+  },
+  "require-dev": {
+    "codeception/codeception": "^2.5"
+  }
+}
