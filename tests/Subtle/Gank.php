@@ -22,7 +22,7 @@ class Gank
     public function serviceConfig()
     {
         return [
-            'base_uri' => 'https://gank.io0',
+            'base_uri' => 'https://gank.io',
         ];
     }
 
@@ -33,5 +33,4 @@ class Gank
             'path' => '/api/today',
         ];
     }
-
 }
