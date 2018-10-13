@@ -33,7 +33,7 @@ class ContainerGetObjectWithArgsTest extends \Codeception\Test\Unit
         $object1 = Container::get(ObjectWithArgs::class, $name, $mobile);
         $object2 = Container::get(ObjectWithArgs::class, $name, $mobile);
 
-        $this->assertEquals(spl_object_hash($object2), spl_object_hash($object1));
+        $this->tester->assertEquals(spl_object_hash($object2), spl_object_hash($object1));
     }
 
     public function testDoubleGetWithoutSameArgs()
