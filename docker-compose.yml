@@ -1,0 +1,16 @@
+version: '3.4'
+services:
+  swoole:
+    image: "twosee/swoole-coroutine"
+    ports:
+    - "9508:9508"
+    volumes:
+    - "./:/root/src"
+    command: "php -S 127.0.0.1:8888 -t ."
+  redis:
+    image: redis
+    ports:
+    - "6379:6379"
+    sysctls:
+      net.core.somaxconn: 65535
+    restart: always
