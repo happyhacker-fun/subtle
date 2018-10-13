@@ -19,6 +19,8 @@ use Subtle\Log\Log;
 
 trait Request
 {
+    private $module = 'HTTP REQUEST';
+
     abstract protected function serviceConfig();
 
     abstract protected function apiConfig($api);
@@ -136,7 +138,7 @@ trait Request
     public function onStats(TransferStats $stats): void
     {
             $context = [
-                'request_method' => $stats->getRequest()->getMethod(),
+                'method' => $stats->getRequest()->getMethod(),
                 'uri' => $stats->getEffectiveUri()->getScheme() . '://' . $stats->getEffectiveUri()->getHost() . $stats->getEffectiveUri()->getPath(),
                 'time' => $stats->getTransferTime(),
             ];
@@ -145,11 +147,11 @@ trait Request
                 $context['status'] = $statusCode;
 
                 if ($statusCode >= 200 && $statusCode < 300) {
-                    Log::info('HTTP REQUEST', $context);
+                    Log::info($this->module, $context);
                 }
 
                 if ($statusCode >= 300 && $statusCode < 400) {
-                    Log::notice('HTTP REQUEST', $context);
+                    Log::notice($this->module, $context);
                 }
 
                 if ($statusCode >= 400 && $statusCode < 500) {
@@ -160,7 +162,7 @@ trait Request
 
                     $context['response_headers'] = $stats->getResponse()->getHeaders();
                     $context['response_body'] = $stats->getResponse()->getBody();
-                    Log::warning('HTTP REQUEST', $context);
+                    Log::warning($this->module, $context);
                 }
 
                 if ($statusCode >= 500) {
@@ -171,12 +173,12 @@ trait Request
 
                     $context['response_headers'] = $stats->getResponse()->getHeaders();
                     $context['response_body'] = $stats->getResponse()->getBody();
-                    Log::error('HTTP REQUEST', $context);
+                    Log::error($this->module, $context);
                 }
 
             } else {
                 $context['error_code'] = $stats->getHandlerErrorData();
-                Log::critical('HTTP REQUEST', $context);
+                Log::critical($this->module, $context);
             }
     }
 }

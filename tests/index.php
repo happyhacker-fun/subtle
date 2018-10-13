@@ -6,13 +6,14 @@
  * Time: 01:01
  */
 
+use Subtle\Factory\Container;
 use Tests\Subtle\Gank;
 
 require __DIR__ . '/../src/bootstrap.php';
 
 require __DIR__ . '/../vendor/autoload.php';
 
-$gank = new Gank();
+$gank = Container::get(Gank::class);
 
 $response = $gank->send('api');
 var_dump($response);
