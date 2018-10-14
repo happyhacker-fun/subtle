@@ -6,7 +6,12 @@
     "illuminate/database": "^5.7",
     "illuminate/events": "^5.7",
     "ext-pdo": "*",
-    "fzaninotto/faker": "^1.8"
+    "fzaninotto/faker": "^1.8",
+    "particle/validator": "^2.3",
+    "byrokrat/checkdigit": "^2.1",
+    "giggsey/libphonenumber-for-php": "^8.9",
+    "particle/filter": "^1.5",
+    "nesbot/carbon": "2.3.0 as 1.34.0"
   },
   "autoload": {
     "psr-4": {

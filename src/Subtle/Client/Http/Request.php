@@ -20,7 +20,7 @@ use Subtle\Log\Log;
 trait Request
 {
     protected $defaultOptions = [
-        'connect_timeout' => 2.0,
+        'timeout' => 2,
         'http_errors' => false,
     ];
     /**
@@ -72,7 +72,7 @@ trait Request
 
         $response = $client->send(
             $request,
-            array_replace_recursive($serviceConfig, $apiConfig, $options, [
+            array_replace_recursive($this->defaultOptions, $serviceConfig, $apiConfig, $options, [
                     'on_stats' => [$this, 'onStats']]
             )
         );
