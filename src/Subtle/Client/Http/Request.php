@@ -19,21 +19,20 @@ use Subtle\Log\Log;
 
 trait Request
 {
-    private $module = 'HTTP REQUEST';
-
-    abstract protected function serviceConfig();
-
-    abstract protected function apiConfig($api);
-
     protected $defaultOptions = [
         'connect_timeout' => 2.0,
         'http_errors' => false,
     ];
+    /**
+     * @internal
+     * @var string
+     */
+    private $module = 'HTTP REQUEST';
 
     /**
      * @param $api
      * @param array $options
-     * @return array|false|string
+     * @return array|false|string|Response
      * @throws ApiNotSetException
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
@@ -47,13 +46,13 @@ trait Request
         }
 
         $baseUri = $apiConfig['base_uri'] ?? $serviceConfig['base_uri'];
-        if (! $baseUri) {
+        if (!$baseUri) {
             throw new ApiNotSetException('API ' . $api . ' {base_uri} not set');
         }
 
         $path = $apiConfig['path'] ?? '';
 
-        if (! $path) {
+        if (!$path) {
             throw new ApiNotSetException('API ' . $api . ' {path} not set');
         }
 
@@ -69,27 +68,30 @@ trait Request
                 $serviceConfig['headers'] ?? [],
                 $apiConfig['headers'] ?? [],
                 $options['headers'] ?? [])
-            );
+        );
 
         $response = $client->send(
             $request,
             array_replace_recursive($serviceConfig, $apiConfig, $options, [
-                'on_stats' => [$this, 'onStats']]
+                    'on_stats' => [$this, 'onStats']]
             )
         );
 
-        return $this->parseResponse($response);
+        $responseHandler = $apiConfig['response_handler'] ?? $serviceConfig['response_handler'] ?? null;
 
-    }
+        if (! $responseHandler) {
+            return $response;
+        }
 
-    /**
-     * @param $api
-     * @param callable $callback
-     * @param array $options
-     */
-    public function sendAsync($api, callable $callback, array $options = [])
-    {
+        if ($responseHandler === 'default') {
+            return $this->parseResponse($response);
+        }
 
+        if (\is_callable($responseHandler)) {
+            return $responseHandler($response);
+        }
+
+        return $response;
     }
 
     /**
@@ -131,54 +133,68 @@ trait Request
     }
 
     /**
+     * @param $api
+     * @param callable $callback
+     * @param array $options
+     */
+    public function sendAsync($api, callable $callback, array $options = [])
+    {
+
+    }
+
+    /**
      * Callback function for logging request details.
      *
      * @param TransferStats $stats
      */
     public function onStats(TransferStats $stats): void
     {
-            $context = [
-                'method' => $stats->getRequest()->getMethod(),
-                'uri' => $stats->getEffectiveUri()->getScheme() . '://' . $stats->getEffectiveUri()->getHost() . $stats->getEffectiveUri()->getPath(),
-                'time' => $stats->getTransferTime(),
-            ];
-            if ($stats->hasResponse()) {
-                $statusCode = $stats->getResponse()->getStatusCode();
-                $context['status'] = $statusCode;
+        $context = [
+            'method' => $stats->getRequest()->getMethod(),
+            'uri' => $stats->getEffectiveUri()->getScheme() . '://' . $stats->getEffectiveUri()->getHost() . $stats->getEffectiveUri()->getPath(),
+            'time' => $stats->getTransferTime(),
+        ];
+        if ($stats->hasResponse()) {
+            $statusCode = $stats->getResponse()->getStatusCode();
+            $context['status'] = $statusCode;
 
-                if ($statusCode >= 200 && $statusCode < 300) {
-                    Log::info($this->module, $context);
-                }
-
-                if ($statusCode >= 300 && $statusCode < 400) {
-                    Log::notice($this->module, $context);
-                }
-
-                if ($statusCode >= 400 && $statusCode < 500) {
-                    $context['request_query'] = $stats->getEffectiveUri()->getQuery();
-                    $context['request_user_info'] = $stats->getEffectiveUri()->getUserInfo();
-                    $context['request_body'] = $stats->getRequest()->getBody();
-                    $context['request_headers'] = $stats->getRequest()->getHeaders();
-
-                    $context['response_headers'] = $stats->getResponse()->getHeaders();
-                    $context['response_body'] = $stats->getResponse()->getBody();
-                    Log::warning($this->module, $context);
-                }
-
-                if ($statusCode >= 500) {
-                    $context['request_query'] = $stats->getEffectiveUri()->getQuery();
-                    $context['request_user_info'] = $stats->getEffectiveUri()->getUserInfo();
-                    $context['request_body'] = $stats->getRequest()->getBody();
-                    $context['request_headers'] = $stats->getRequest()->getHeaders();
-
-                    $context['response_headers'] = $stats->getResponse()->getHeaders();
-                    $context['response_body'] = $stats->getResponse()->getBody();
-                    Log::error($this->module, $context);
-                }
-
-            } else {
-                $context['error_code'] = $stats->getHandlerErrorData();
-                Log::critical($this->module, $context);
+            if ($statusCode >= 200 && $statusCode < 300) {
+                Log::info($this->module, $context);
             }
+
+            if ($statusCode >= 300 && $statusCode < 400) {
+                Log::notice($this->module, $context);
+            }
+
+            if ($statusCode >= 400 && $statusCode < 500) {
+                $context['request_query'] = $stats->getEffectiveUri()->getQuery();
+                $context['request_user_info'] = $stats->getEffectiveUri()->getUserInfo();
+                $context['request_body'] = $stats->getRequest()->getBody();
+                $context['request_headers'] = $stats->getRequest()->getHeaders();
+
+                $context['response_headers'] = $stats->getResponse()->getHeaders();
+                $context['response_body'] = $stats->getResponse()->getBody();
+                Log::warning($this->module, $context);
+            }
+
+            if ($statusCode >= 500) {
+                $context['request_query'] = $stats->getEffectiveUri()->getQuery();
+                $context['request_user_info'] = $stats->getEffectiveUri()->getUserInfo();
+                $context['request_body'] = $stats->getRequest()->getBody();
+                $context['request_headers'] = $stats->getRequest()->getHeaders();
+
+                $context['response_headers'] = $stats->getResponse()->getHeaders();
+                $context['response_body'] = $stats->getResponse()->getBody();
+                Log::error($this->module, $context);
+            }
+
+        } else {
+            $context['error_code'] = $stats->getHandlerErrorData();
+            Log::critical($this->module, $context);
+        }
     }
+
+    abstract protected function serviceConfig(): array;
+
+    abstract protected function apiConfig($api): array;
 }

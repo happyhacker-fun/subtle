@@ -2,7 +2,11 @@
   "require": {
     "guzzlehttp/guzzle": "^6.3",
     "ext-json": "*",
-    "monolog/monolog": "^1.23"
+    "monolog/monolog": "^1.23",
+    "illuminate/database": "^5.7",
+    "illuminate/events": "^5.7",
+    "ext-pdo": "*",
+    "fzaninotto/faker": "^1.8"
   },
   "autoload": {
     "psr-4": {

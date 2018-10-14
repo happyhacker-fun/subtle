@@ -8,6 +8,6 @@
 
 ini_set('serialize_precision', 14);
 
-defined('APP_NAME') || define('APP_NAME', 'subtle-app-');
+defined('APP_NAME') || define('APP_NAME', 'subtle-app');
 defined('LOG_DIR') || define('LOG_DIR', '/tmp/' . APP_NAME);
 defined('REQUEST_ID') || define('REQUEST_ID', uniqid(APP_NAME, true));
