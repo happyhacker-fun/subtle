@@ -56,28 +56,30 @@ trait Request
             throw new ApiNotSetException('API ' . $api . ' {path} not set');
         }
 
+        $mergedConfig = array_replace_recursive($this->defaultOptions, $serviceConfig, $apiConfig, $options);
+        Log::info('config', $mergedConfig);
+
+        $handlers = $mergedConfig['custom_handlers'] ?? [];
         $client = new Client([
             'base_uri' => $baseUri,
-            'handler' => $this->handlerStack(),
+            'handler' => $this->handlerStack($handlers),
         ]);
 
         $request = new \GuzzleHttp\Psr7\Request(
             $apiConfig['method'],
             $path,
-            array_replace_recursive(
-                $serviceConfig['headers'] ?? [],
-                $apiConfig['headers'] ?? [],
-                $options['headers'] ?? [])
+            $mergedConfig['headers'] ?? []
         );
 
-        $response = $client->send(
+        $response =  $client->send(
             $request,
-            array_replace_recursive($this->defaultOptions, $serviceConfig, $apiConfig, $options, [
-                    'on_stats' => [$this, 'onStats']]
-            )
+            array_merge($mergedConfig, ['on_stats' => [$this, 'onStats']])
         );
 
-        $responseHandler = $apiConfig['response_handler'] ?? $serviceConfig['response_handler'] ?? null;
+        $responseHandler = $mergedConfig['response_handler'] ?? null;
+        if (!\is_callable($responseHandler)) {
+            Log::info($responseHandler);
+        }
 
         if (! $responseHandler) {
             return $response;
@@ -97,20 +99,16 @@ trait Request
     /**
      * Guzzle middlewares.
      *
+     * @param array $handlers
      * @return HandlerStack
      */
-    protected function handlerStack(): HandlerStack
+    protected function handlerStack(array $handlers): HandlerStack
     {
         $stack = HandlerStack::create();
 
-        $middlewares = [
-            Middleware::log(Log::getLogger(), new MessageFormatter(MessageFormatter::SHORT)),
-        ];
-        if (empty($middlewares)) {
-            return $stack;
-        }
+        $handlers[] = Middleware::log(Log::getLogger(), new MessageFormatter(MessageFormatter::SHORT));
 
-        foreach ($middlewares as $middleware) {
+        foreach ($handlers as $middleware) {
             $stack->push($middleware);
         }
 
