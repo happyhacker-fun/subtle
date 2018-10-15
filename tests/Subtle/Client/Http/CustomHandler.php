@@ -23,7 +23,7 @@ class CustomHandler
         return [
             'base_uri' => 'http://subtle_httpbin_1',
             'response_handler' => 'default',
-            'custom_handlers' => [
+            'handlers' => [
                 Middleware::mapRequest(function (RequestInterface $request) {
                     return $request->withAddedHeader('X-Foo', 'bar');
                 }),

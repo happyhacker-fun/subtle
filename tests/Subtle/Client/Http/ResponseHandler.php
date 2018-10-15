@@ -9,6 +9,7 @@
 namespace Tests\Subtle\Client\Http;
 
 
+use GuzzleHttp\Middleware;
 use GuzzleHttp\Psr7\Response;
 use Subtle\Client\Http\Request;
 
@@ -21,6 +22,11 @@ class ResponseHandler
         return [
             'base_uri' => 'http://subtle_httpbin_1',
             'response_handler' => 'default',
+            'handlers' => [
+                Middleware::mapRequest(function (\GuzzleHttp\Psr7\Request $request) {
+                    return $request->withAddedHeader('X-Foo', 'bar');
+                })
+            ],
         ];
     }
 

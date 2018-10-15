@@ -59,7 +59,7 @@ trait Request
         $mergedConfig = array_replace_recursive($this->defaultOptions, $serviceConfig, $apiConfig, $options);
         Log::info('config', $mergedConfig);
 
-        $handlers = $mergedConfig['custom_handlers'] ?? [];
+        $handlers = $mergedConfig['handlers'] ?? [];
         $client = new Client([
             'base_uri' => $baseUri,
             'handler' => $this->handlerStack($handlers),

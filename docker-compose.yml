@@ -32,4 +32,4 @@ services:
     image: kennethreitz/httpbin
     restart: always
     ports:
-      - 80:80
+      - 8090:80
