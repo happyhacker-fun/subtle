@@ -19,8 +19,7 @@
     "particle/validator": "^2.3",
     "byrokrat/checkdigit": "^2.1",
     "giggsey/libphonenumber-for-php": "^8.9",
-    "particle/filter": "^1.5",
-    "nesbot/carbon": "2.3.0 as 1.34.0"
+    "particle/filter": "^1.5"
   },
   "autoload": {
     "psr-4": {
