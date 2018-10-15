@@ -1,4 +1,13 @@
 {
+  "name": "subtlephp/subtle",
+  "type": "library",
+  "authors": [
+    {
+      "name": "lovelock",
+      "email": "frostwong@gmai.com"
+    }
+  ],
+  "description": "An out of box php app dev library",
   "require": {
     "guzzlehttp/guzzle": "^6.3",
     "ext-json": "*",
